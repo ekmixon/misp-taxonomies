@@ -5,4 +5,4 @@ with open(filename) as fp:
 	t = json.load(fp)
 
 for taxo in sorted(t['taxonomies'], key=lambda k: k['name']):
-    print ("{}:\n:   {}\n".format(taxo['name'], taxo['description']))
+	print(f"{taxo['name']}:\n:   {taxo['description']}\n")

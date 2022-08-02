@@ -11,8 +11,7 @@ TAXONOMY_ROOT_PATH = Path(__file__).resolve().parent.parent
 def fetchTaxonomies():
     taxonomiesFolder = TAXONOMY_ROOT_PATH
     taxonomies = []
-    allTaxonomies = list(taxonomiesFolder.glob('./*/machinetag.json'))
-    allTaxonomies.sort()
+    allTaxonomies = sorted(taxonomiesFolder.glob('./*/machinetag.json'))
     for taxonomyFile in allTaxonomies:
         with open(taxonomyFile, 'rb') as f:
             taxonomy = json.load(f)
@@ -20,14 +19,16 @@ def fetchTaxonomies():
     return taxonomies
 
 def generateManifest(taxonomies):
-    manifest = {}
-    manifest['taxonomies'] = []
-    manifest['path'] = 'machinetag.json'
-    manifest['url'] = 'https://raw.githubusercontent.com/MISP/misp-taxonomies/main/'
-    manifest['description'] = 'Manifest file of MISP taxonomies available.'
-    manifest['license'] = 'CC-0'
     now = datetime.now()
-    manifest['version'] = '{}{:02}{:02}'.format(now.year, now.month, now.day)
+    manifest = {
+        'taxonomies': [],
+        'path': 'machinetag.json',
+        'url': 'https://raw.githubusercontent.com/MISP/misp-taxonomies/main/',
+        'description': 'Manifest file of MISP taxonomies available.',
+        'license': 'CC-0',
+        'version': '{}{:02}{:02}'.format(now.year, now.month, now.day),
+    }
+
     for taxonomy in taxonomies:
         taxObj = {
             'name': taxonomy['namespace'],
@@ -43,7 +44,7 @@ def saveManifest(manifest):
         f.write('\n')
 
 def awesomePrint(text):
-    print('\033[1;32m{}\033[0;39m'.format(text))
+    print(f'\033[1;32m{text}\033[0;39m')
 
 if __name__ == "__main__":
     taxonomies = fetchTaxonomies()

@@ -17,11 +17,8 @@ with open(args.f, 'rb') as f:
         predicate = predicate_value['predicate']
         output = []
         for a in predicate_value['entry']:
-            if 'value' in a and 'expanded' in a:
-                continue
-            elif 'value' in a and 'expanded' not in a:
-                if args.e:
-                    a['expanded'] = a['value']
-                    output.append(a)
+            if 'value' in a and 'expanded' not in a and args.e:
+                a['expanded'] = a['value']
+                output.append(a)
         if args.j:
             print(json.dumps(output))

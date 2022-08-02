@@ -31,14 +31,14 @@ import os.path
 import argparse
 import os
 
-taxonomies = []
-
 # Get our current directory from file location
 thisDir = os.path.dirname(__file__)
 
-for folder in os.listdir(os.path.join(thisDir, '../')):
-    if os.path.isfile(os.path.join(thisDir, '../', folder, 'machinetag.json')):
-        taxonomies.append(folder)
+taxonomies = [
+    folder
+    for folder in os.listdir(os.path.join(thisDir, '../'))
+    if os.path.isfile(os.path.join(thisDir, '../', folder, 'machinetag.json'))
+]
 
 taxonomies.sort()
 
@@ -52,26 +52,29 @@ args = argParser.parse_args()
 doc = ''
 if args.a:
     dedication = "\n[dedication]\n== Funding and Support\nThe MISP project is financially and resource supported by https://www.circl.lu/[CIRCL Computer Incident Response Center Luxembourg ].\n\nimage:{images-misp}logo.png[CIRCL logo]\n\nA CEF (Connecting Europe Facility) funding under CEF-TC-2016-3 - Cyber Security has been granted from 1st September 2017 until 31th August 2019 as ***Improving MISP as building blocks for next-generation information sharing***.\n\nimage:{images-misp}en_cef.png[CEF funding]\n\nIf you are interested to co-fund projects around MISP, feel free to get in touch with us.\n\n"
-    doc = doc + ":toc: right\n"
-    doc = doc + ":toclevels: 1\n"
-    doc = doc + ":icons: font\n"
-    doc = doc + ":images-cdn: https://raw.githubusercontent.com/MISP/MISP/2.4/INSTALL/logos/\n"
-    doc = doc + ":images-misp: https://www.misp-project.org/assets/images/\n"
-    doc = doc + "= MISP taxonomies and classification as machine tags\n\n"
-    doc = doc + "= Introduction\n"
-    doc = doc + "\nimage::{images-cdn}misp-logo.png[MISP logo]\n"
-    doc = doc + "The MISP threat sharing platform is a free and open source software helping information sharing of threat intelligence including cyber security indicators, financial fraud or counter-terrorism information. The MISP project includes multiple sub-projects to support the operational requirements of analysts and improve the overall quality of information shared.\n\n"
-    doc = doc + ""
+    doc += ":toc: right\n"
+    doc += ":toclevels: 1\n"
+    doc += ":icons: font\n"
+    doc += ":images-cdn: https://raw.githubusercontent.com/MISP/MISP/2.4/INSTALL/logos/\n"
+
+    doc += ":images-misp: https://www.misp-project.org/assets/images/\n"
+    doc += "= MISP taxonomies and classification as machine tags\n\n"
+    doc += "= Introduction\n"
+    doc += "\nimage::{images-cdn}misp-logo.png[MISP logo]\n"
+    doc += "The MISP threat sharing platform is a free and open source software helping information sharing of threat intelligence including cyber security indicators, financial fraud or counter-terrorism information. The MISP project includes multiple sub-projects to support the operational requirements of analysts and improve the overall quality of information shared.\n\n"
+
+    doc += ""
     doc = "{} {} {} {}".format(doc, "\nTaxonomies that can be used in MISP (2.4) and other information sharing tool and expressed in Machine Tags (Triple Tags).",
                                "A machine tag is composed of a namespace (MUST), a predicate (MUST) and an (OPTIONAL) value.",
                                "Machine tags are often called triple tag due to their format.\n")
-    doc = doc + "The following document is generated from the machine-readable JSON describing the https://github.com/MISP/misp-taxonomies[MISP taxonomies]."
-    doc = doc + "\n\n"
-    doc = doc + "<<<\n"
-    doc = doc + dedication
-    doc = doc + "<<<\n"
-    doc = doc + "= MISP taxonomies\n"
-    doc = doc + "\n\n"
+    doc += "The following document is generated from the machine-readable JSON describing the https://github.com/MISP/misp-taxonomies[MISP taxonomies]."
+
+    doc += "\n\n"
+    doc += "<<<\n"
+    doc += dedication
+    doc += "<<<\n"
+    doc += "= MISP taxonomies\n"
+    doc += "\n\n"
 
 if args.n:
     del taxonomies[:]
@@ -83,25 +86,24 @@ def asciidoc(content=False, adoc=doc, t='title', toplevel=False):
         return False
     adoc = adoc + "\n"
     if t == 'title':
-        content = '==== ' + content
+        content = f'==== {content}'
     elif t == 'predicate':
-        content = '=== ' + content
+        content = f'=== {content}'
     elif t == 'namespace':
-        content = '== ' + content + '\n'
-        content = "{}\n{}{} {}{}{} {}".format(content, 'NOTE: ', namespace, 'namespace available in JSON format at https://github.com/MISP/misp-taxonomies/blob/main/',
-                                                namespace, '/machinetag.json[*this location*]. The JSON format can be freely reused in your application',
-                                                'or automatically enabled in https://www.github.com/MISP/MISP[MISP] taxonomy.')
+        content = f'== {content}' + '\n'
+        content = f"{content}\nNOTE: {namespace} namespace available in JSON format at https://github.com/MISP/misp-taxonomies/blob/main/{namespace}/machinetag.json[*this location*]. The JSON format can be freely reused in your application or automatically enabled in https://www.github.com/MISP/MISP[MISP] taxonomy."
+
     elif t == 'description' and toplevel is True:
-        content = "\n{} \n".format(content)
+        content = f"\n{content} \n"
     elif t == 'description' and toplevel is False:
         try:
             (n, value) = content.split(":", 1)
-            content = "\n{} \n".format(value)
+            content = f"\n{value} \n"
         except:
-            content = "\n{} \n".format(content)
+            content = f"\n{content} \n"
     elif t == 'numerical_value':
         (n, value) = content.split(":", 1)
-        content = "\nAssociated numerical value=\"{}\" \n".format(value)
+        content = f'\nAssociated numerical value=\"{value}\" \n'
     elif t == 'exclusive':
         (n, value) = content.split(":", 1)
         if n:
@@ -125,10 +127,7 @@ for taxonomy in taxonomies:
     with open(filename) as fp:
         t = json.load(fp)
     namespace = t['namespace']
-    if t.get('expanded'):
-        expanded_namespace = t['expanded']
-    else:
-        expanded_namespace = namespace
+    expanded_namespace = t['expanded'] if t.get('expanded') else namespace
     if args.a:
         doc = asciidoc(content=t['namespace'], adoc=doc, t='namespace')
         doc = asciidoc(content=t['description'], adoc=doc, t='description', toplevel = True)
@@ -175,9 +174,8 @@ for taxonomy in taxonomies:
                                  doc = asciidoc(content=machineTag(namespace=namespace, predicate=v['numerical_value']), adoc=doc, t='numerical_value')
                         else:
                             print(machineTag(namespace=namespace, predicate=e['predicate'], value=v['value']))
-                        if args.e:
-                            if'expanded' in v:
-                                print("--> " + machineTag(namespace=namespace, predicate=expanded, value=v['expanded']))
+                        if args.e and 'expanded' in v:
+                            print("--> " + machineTag(namespace=namespace, predicate=expanded, value=v['expanded']))
 
 with open('../mapping/mapping.json') as mapping:
     m = json.load(mapping)
@@ -186,8 +184,8 @@ with open('../mapping/mapping.json') as mapping:
     for value in sorted(m.keys()):
         output = '{}{} **{}**{}{}\n'.format(output,'\n.Mapping table - ',value,'\n|===\n|',value)
         for mapped in m[value]['values']:
-            output = '{}|{}\n'.format(output,mapped)
-        output = '{}|===\n'.format(output)
+            output = f'{output}|{mapped}\n'
+        output = f'{output}|===\n'
     doc = doc + output
 
 if args.a:

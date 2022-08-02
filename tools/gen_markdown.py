@@ -11,8 +11,7 @@ TAXONOMY_ROOT_PATH = Path(__file__).resolve().parent.parent
 def fetchTaxonomies():
     taxonomiesFolder = TAXONOMY_ROOT_PATH
     taxonomies = []
-    allTaxonomies = list(taxonomiesFolder.glob('./*/machinetag.json'))
-    allTaxonomies.sort()
+    allTaxonomies = sorted(taxonomiesFolder.glob('./*/machinetag.json'))
     for taxonomyFile in allTaxonomies:
         with open(taxonomyFile, 'rb') as f:
             taxonomy = json.load(f)
@@ -20,30 +19,30 @@ def fetchTaxonomies():
     return taxonomies
 
 def generateMarkdown(taxonomies):
-    markdown_line_array = []
-    markdown_line_array.append("# Taxonomies")
-    markdown_line_array.append("- Generation date: %s" % datetime.now().isoformat().split('T')[0])
-    markdown_line_array.append("- license: %s" % 'CC-0')
-    markdown_line_array.append("- description: %s" % 'Manifest file of MISP taxonomies available.')
-    markdown_line_array.append("")
-    
-    markdown_line_array.append("## Taxonomies")
-    markdown_line_array.append("")
+    markdown_line_array = [
+        "# Taxonomies",
+        f"- Generation date: {datetime.now().isoformat().split('T')[0]}",
+        '- license: CC-0',
+        '- description: Manifest file of MISP taxonomies available.',
+        "",
+        "## Taxonomies",
+        "",
+    ]
+
     for taxonomy in taxonomies:
-        markdown_line_array.append("### %s" % taxonomy['namespace'])
-        markdown_line_array.append("- description: %s" % taxonomy['description'])
-        markdown_line_array.append("- version: %s" % taxonomy['version'])
+        markdown_line_array.append(f"### {taxonomy['namespace']}")
+        markdown_line_array.append(f"- description: {taxonomy['description']}")
+        markdown_line_array.append(f"- version: {taxonomy['version']}")
         markdown_line_array.append("- Predicates")
         markdown_line_array = markdown_line_array + ['    - '+p['value'] for p in taxonomy['predicates']]
-    markdown = '\n'.join(markdown_line_array)
-    return markdown
+    return '\n'.join(markdown_line_array)
 
 def saveMarkdown(markdown):
     with open(TAXONOMY_ROOT_PATH / 'summary.md', 'w') as f:
         f.write(markdown)
 
 def awesomePrint(text):
-    print('\033[1;32m{}\033[0;39m'.format(text))
+    print(f'\033[1;32m{text}\033[0;39m')
 
 if __name__ == "__main__":
     taxonomies = fetchTaxonomies()

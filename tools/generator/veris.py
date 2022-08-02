@@ -5,12 +5,13 @@ filename = 'verisc-labels.json'
 namespace = 'veris'
 description = 'Vocabulary for Event Recording and Incident Sharing (VERIS)'
 
-output = {}
-output['namespace'] = namespace
-output['description'] = description
-output['version'] = 2
-output['predicates'] = []
-output['values'] = []
+output = {
+    'namespace': namespace,
+    'description': description,
+    'version': 2,
+    'predicates': [],
+    'values': [],
+}
 
 with open(filename) as fp:
     t = json.load(fp)
@@ -25,12 +26,11 @@ def lookupPredicate(predicate=False):
 
 
 def lookupValues(predicate=False):
-    if not predicate:
-        return {}
-    for p in output['values']:
-        if p['predicate'] == predicate:
-            return p
-    return {}
+    return (
+        next((p for p in output['values'] if p['predicate'] == predicate), {})
+        if predicate
+        else {}
+    )
 
 
 def machineTag(namespace=False, predicate=False, value=None, expanded=None):
@@ -39,24 +39,17 @@ def machineTag(namespace=False, predicate=False, value=None, expanded=None):
         return None
     if value is None:
         return ('{0}:{1}'.format(namespace, predicate))
+    if not lookupPredicate(predicate=predicate):
+        x = {'value': predicate}
+        output['predicates'].append(x)
+    z = {'value': value, 'expanded': expanded}
+    if predicate_entries := lookupValues(predicate):
+        predicate_entries['entry'].append(z)
     else:
-        if not lookupPredicate(predicate=predicate):
-            x = {}
-            x['value'] = predicate
-            output['predicates'].append(x)
-        z = {}
-        z['value'] = value
-        z['expanded'] = expanded
-        predicate_entries = lookupValues(predicate)
-        if predicate_entries:
-            predicate_entries['entry'].append(z)
-        else:
-            y = {}
-            y['predicate'] = predicate
-            y['entry'] = []
-            y['entry'].append(z)
-            output['values'].append(y)
-        return ('{0}:{1}=\"{2}\"'.format(namespace, predicate, value))
+        y = {'predicate': predicate, 'entry': []}
+        y['entry'].append(z)
+        output['values'].append(y)
+    return ('{0}:{1}=\"{2}\"'.format(namespace, predicate, value))
 
 
 prefix = []
@@ -79,7 +72,7 @@ def flatten(root, prefix_keys=True):
             else:
                 p = ':'.join(prefix.rsplit(':')[:-1])
                 if debug:
-                    print(namespace + ":" + p + "=" + v)
+                    print(f"{namespace}:{p}={v}")
                 machineTag(namespace=namespace, predicate=p, value=prefix.split(':')[-1], expanded=v)
                 ret[prefix] = v
     return ret

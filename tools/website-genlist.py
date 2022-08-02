@@ -7,6 +7,8 @@ with open(filename) as fp:
     t = json.load(fp)
 
 for taxo in sorted(t['taxonomies'], key=lambda k: k['name']):
-    print("### {}".format(taxo['name']))
+    print(f"### {taxo['name']}")
     print()
-    print("[{}](https://github.com/MISP/misp-taxonomies/tree/main/{}) :\n{} [Overview](https://www.misp-project.org/taxonomies.html#_{})\n".format(taxo['name'], taxo['name'], taxo['description'], re.sub(r'-', '_',taxo['name'])))
+    print(
+        f"[{taxo['name']}](https://github.com/MISP/misp-taxonomies/tree/main/{taxo['name']}) :\n{taxo['description']} [Overview](https://www.misp-project.org/taxonomies.html#_{re.sub(r'-', '_', taxo['name'])})\n"
+    )
